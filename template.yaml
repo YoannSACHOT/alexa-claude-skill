@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Skill Alexa avec Claude API - Assistant vocal intelligent en français
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: nodejs20.x
+    MemorySize: 256
+
+Parameters:
+  AnthropicApiKey:
+    Type: String
+    NoEcho: true
+    Description: Clé API Anthropic pour Claude
+
+Resources:
+  # Fonction Lambda pour la skill Alexa
+  AlexaClaudeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: index.handler
+      Environment:
+        Variables:
+          ANTHROPIC_API_KEY: !Ref AnthropicApiKey
+          SESSION_TABLE: !Ref SessionTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SessionTable
+      Events:
+        AlexaSkillEvent:
+          Type: AlexaSkill
+
+  # Table DynamoDB pour les sessions de conversation
+  SessionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: AlexaClaudeSessions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: sessionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: sessionId
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+Outputs:
+  AlexaClaudeFunctionArn:
+    Description: ARN de la fonction Lambda (à renseigner dans la console Alexa)
+    Value: !GetAtt AlexaClaudeFunction.Arn

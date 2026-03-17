@@ -1,0 +1,51 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "mon assistant claude",
+      "intents": [
+        {
+          "name": "AskClaudeIntent",
+          "slots": [
+            {
+              "name": "query",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "demande à mon assistant claude {query}",
+            "dis à mon assistant claude {query}",
+            "pose la question {query}",
+            "demande lui {query}",
+            "je voudrais savoir {query}",
+            "peux tu me dire {query}",
+            "est-ce que tu sais {query}",
+            "explique moi {query}",
+            "c'est quoi {query}",
+            "parle moi de {query}",
+            "raconte moi {query}",
+            "aide moi avec {query}",
+            "j'ai une question {query}",
+            "réponds à {query}",
+            "{query}"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+.aws-sam/
+
+# Secrets et credentials
+.claude/
+*.credentials.json
+.env
+.env.*
+samconfig.toml
