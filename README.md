@@ -1,113 +1,124 @@
 # Alexa Claude Skill
 
-An Alexa skill powered by [Claude](https://www.anthropic.com/claude) — a smart, conversational voice assistant in French.
+Une skill Alexa propulsee par [Claude](https://www.anthropic.com/claude) -- un assistant vocal conversationnel et intelligent en francais.
 
-Ask anything by saying **"Alexa, demande à mon assistant claude..."** and get natural, spoken answers powered by Claude's intelligence.
+Posez n'importe quelle question en disant **"Alexa, demande a mon assistant claude..."** et obtenez des reponses naturelles et parlees grace a l'intelligence de Claude.
 
-## Features
+## Informations du projet
 
-- **Natural conversation** — Claude responds concisely in spoken French, no markdown or visual formatting
-- **Multi-turn context** — Remembers the conversation within a session (up to 10 exchanges stored in DynamoDB)
-- **Fast & safe** — 6-second API timeout to stay within Alexa's 8-second limit, with graceful fallbacks
-- **Serverless** — Deploys as an AWS Lambda via SAM, with DynamoDB for session storage (auto-cleanup via TTL)
+| Element | Valeur |
+|---------|--------|
+| **Skill ID** | `amzn1.ask.skill.1ca6fa67-a7d0-419b-9ed9-40cd7e8e6ca6` |
+| **Lambda ARN** | `arn:aws:lambda:eu-west-3:905418417336:function:alexa-claude-skill-AlexaClaudeFunction-HT0fKFEjj06t` |
+| **Region AWS** | `eu-west-3` (Paris) |
+| **Statut** | En mode developpement, non publiee |
+
+> **IMPORTANT** : ne jamais commiter de secrets (cles API, credentials AWS, mots de passe) dans le depot.
+
+## Fonctionnalites
+
+- **Conversation naturelle** -- Claude repond de maniere concise en francais parle, sans markdown ni formatage visuel
+- **Contexte multi-tour** -- Se souvient de la conversation au sein d'une session (jusqu'a 10 echanges stockes dans DynamoDB)
+- **Rapide et fiable** -- Timeout API de 6 secondes pour rester dans la limite de 8 secondes d'Alexa, avec replis gracieux
+- **Serverless** -- Deploye en tant que Lambda AWS via SAM, avec DynamoDB pour le stockage de session (nettoyage automatique via TTL)
 
 ## Architecture
 
 ```
-                  ┌─────────────┐
-                  │  Alexa Echo  │
-                  └──────┬───────┘
-                         │ voice
-                  ┌──────▼───────┐
-                  │ Alexa Service│
-                  └──────┬───────┘
-                         │ JSON
-              ┌──────────▼──────────┐
-              │   AWS Lambda        │
-              │   (Node.js 20 ESM)  │
-              │                     │
-              │  ┌───────────────┐  │
-              │  │ index.js      │  │  Alexa SDK handlers
-              │  │ claudeService │──│──► Claude API (6s timeout)
-              │  │ sessionService│──│──► DynamoDB (24h TTL)
-              │  │ responseHelper│  │  Text cleanup & truncation
-              │  └───────────────┘  │
-              └─────────────────────┘
+                  +--------------+
+                  |  Alexa Echo  |
+                  +------+-------+
+                         | voix
+                  +------v-------+
+                  | Service Alexa|
+                  +------+-------+
+                         | JSON
+              +----------v----------+
+              |   AWS Lambda        |
+              |   (Node.js 20 ESM)  |
+              |                     |
+              |  +---------------+  |
+              |  | index.js      |  |  Handlers Alexa SDK
+              |  | claudeService |--|--> API Claude (timeout 6s)
+              |  | sessionService|--|--> DynamoDB (TTL 24h)
+              |  | responseHelper|  |  Nettoyage et troncature du texte
+              |  +---------------+  |
+              +---------------------+
 ```
 
 ```
-├── template.yaml                          # SAM template (Lambda + DynamoDB)
+├── template.yaml                          # Template SAM (Lambda + DynamoDB)
 ├── lambda/
-│   ├── index.js                           # Alexa request handlers
+│   ├── index.js                           # Handlers de requetes Alexa
 │   ├── services/
-│   │   ├── claudeService.js               # Claude API integration
-│   │   └── sessionService.js              # DynamoDB session management
+│   │   ├── claudeService.js               # Integration API Claude
+│   │   └── sessionService.js              # Gestion de session DynamoDB
 │   └── utils/
-│       └── responseHelper.js              # Response formatting for voice
+│       └── responseHelper.js              # Formatage des reponses pour la voix
 └── skill-package/
     └── interactionModels/custom/
-        └── fr-FR.json                     # French interaction model
+        └── fr-FR.json                     # Modele d'interaction en francais
 ```
 
-## Prerequisites
+## Prerequis
 
 - [Node.js](https://nodejs.org/) 20+
-- [AWS CLI](https://aws.amazon.com/cli/) configured (`aws configure`)
+- [AWS CLI](https://aws.amazon.com/cli/) configure (`aws configure`)
 - [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
-- An [Alexa Developer](https://developer.amazon.com/alexa/console/ask) account
-- An [Anthropic API key](https://console.anthropic.com/)
+- Un compte [Alexa Developer](https://developer.amazon.com/alexa/console/ask)
+- Une [cle API Anthropic](https://console.anthropic.com/)
 
-## Deployment
+## Deploiement
 
-### 1. Install dependencies
+### 1. Installer les dependances
 
 ```bash
 cd lambda
 npm install
 ```
 
-### 2. Deploy with SAM
+### 2. Deployer avec SAM
 
 ```bash
 sam build
 sam deploy --guided
 ```
 
-SAM will prompt for:
-- **Stack Name**: `alexa-claude-skill`
-- **AnthropicApiKey**: your Anthropic API key
+SAM demandera :
+- **Stack Name** : `alexa-claude-skill`
+- **AnthropicApiKey** : votre cle API Anthropic
 
-Subsequent deploys:
+Deploiements suivants :
 
 ```bash
 sam build && sam deploy
 ```
 
-### 3. Configure the Alexa skill
+### 3. Configurer la skill Alexa
 
-1. Go to [Alexa Developer Console](https://developer.amazon.com/alexa/console/ask)
-2. Create a new skill:
-   - Name: **Mon Assistant Claude**
-   - Locale: **French (France)**
-   - Model: **Custom**
-   - Hosting: **Provision your own**
-3. In **Interaction Model > JSON Editor**: paste the contents of `skill-package/interactionModels/custom/fr-FR.json`
-4. In **Endpoint**: select **AWS Lambda ARN** and paste the ARN from `sam deploy` output
-5. **Save** and **Build Model**
+1. Aller sur la [Console Alexa Developer](https://developer.amazon.com/alexa/console/ask)
+2. Creer une nouvelle skill :
+   - Nom : **Mon Assistant Claude**
+   - Langue : **Francais (France)**
+   - Modele : **Custom**
+   - Hebergement : **Provision your own**
+3. Dans **Interaction Model > JSON Editor** : coller le contenu de `skill-package/interactionModels/custom/fr-FR.json`
+4. Dans **Endpoint** : selectionner **AWS Lambda ARN** et coller l'ARN affiche dans la sortie de `sam deploy`
+5. **Sauvegarder** et **Compiler le modele**
 
-### 4. Link the Skill ID to Lambda
+### 4. Lier le Skill ID a la Lambda
 
-Copy the Skill ID from the Alexa console (`amzn1.ask.skill.xxx`) and add it as an authorized trigger on your Lambda function in the AWS console.
+Copier le Skill ID depuis la console Alexa (`amzn1.ask.skill.xxx`) et l'ajouter en tant que declencheur autorise sur la fonction Lambda dans la console AWS.
 
-## Local testing
+## Tests en local
 
 ```bash
 sam local invoke AlexaClaudeFunction \
-  --parameter-overrides "AnthropicApiKey=YOUR_KEY" \
+  --parameter-overrides "AnthropicApiKey=VOTRE_CLE" \
   -e events/launch.json
 ```
 
-Example `events/launch.json`:
+Exemple de fichier `events/launch.json` :
 
 ```json
 {
@@ -122,31 +133,31 @@ Example `events/launch.json`:
 }
 ```
 
-## Usage examples
+## Exemples d'utilisation
 
-| You say | Claude answers |
-|---------|---------------|
-| "Alexa, demande à mon assistant claude c'est quoi la photosynthèse" | A concise spoken explanation |
-| "Alexa, demande à mon assistant claude raconte-moi une blague" | A short joke in French |
-| "Alexa, demande à mon assistant claude et pourquoi c'est important ?" | Follows up using conversation context |
+| Vous dites | Claude repond |
+|------------|---------------|
+| "Alexa, demande a mon assistant claude c'est quoi la photosynthese" | Une explication concise et parlee |
+| "Alexa, demande a mon assistant claude raconte-moi une blague" | Une courte blague en francais |
+| "Alexa, demande a mon assistant claude et pourquoi c'est important ?" | Continue la conversation en utilisant le contexte |
 
-## Troubleshooting
+## Depannage
 
-| Problem | Solution |
-|---------|----------|
-| Alexa timeout (8s) | Claude has a 6s timeout. Check network latency or simplify the question |
-| "There was a problem with the requested skill's response" | Check CloudWatch logs for the Lambda |
-| DynamoDB AccessDenied | IAM policy should be auto-configured by SAM. Verify in the AWS console |
-| Skill not found | Ensure the Skill ID is added as a Lambda trigger |
-| Response cut off | Responses are truncated at 6000 characters — normal for long answers |
+| Probleme | Solution |
+|----------|----------|
+| Timeout Alexa (8s) | Claude a un timeout de 6s. Verifier la latence reseau ou simplifier la question |
+| "There was a problem with the requested skill's response" | Verifier les logs CloudWatch de la Lambda |
+| DynamoDB AccessDenied | La politique IAM devrait etre auto-configuree par SAM. Verifier dans la console AWS |
+| Skill introuvable | S'assurer que le Skill ID est ajoute comme declencheur de la Lambda |
+| Reponse tronquee | Les reponses sont limitees a 6000 caracteres -- comportement normal pour les longues reponses |
 
-## Tech stack
+## Stack technique
 
-- **Runtime**: Node.js 20, ESM modules
-- **AI**: Claude API (Anthropic SDK)
-- **Infrastructure**: AWS SAM, Lambda, DynamoDB
-- **Voice**: Alexa Skills Kit SDK
+- **Runtime** : Node.js 20, modules ESM
+- **IA** : API Claude (SDK Anthropic)
+- **Infrastructure** : AWS SAM, Lambda, DynamoDB
+- **Voix** : SDK Alexa Skills Kit
 
-## License
+## Licence
 
 MIT
