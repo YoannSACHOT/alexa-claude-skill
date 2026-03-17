@@ -4,17 +4,6 @@ Une skill Alexa propulsee par [Claude](https://www.anthropic.com/claude) -- un a
 
 Posez n'importe quelle question en disant **"Alexa, demande a mon assistant claude..."** et obtenez des reponses naturelles et parlees grace a l'intelligence de Claude.
 
-## Informations du projet
-
-| Element | Valeur |
-|---------|--------|
-| **Skill ID** | `amzn1.ask.skill.1ca6fa67-a7d0-419b-9ed9-40cd7e8e6ca6` |
-| **Lambda ARN** | `arn:aws:lambda:eu-west-3:905418417336:function:alexa-claude-skill-AlexaClaudeFunction-HT0fKFEjj06t` |
-| **Region AWS** | `eu-west-3` (Paris) |
-| **Statut** | En mode developpement, non publiee |
-
-> **IMPORTANT** : ne jamais commiter de secrets (cles API, credentials AWS, mots de passe) dans le depot.
-
 ## Fonctionnalites
 
 - **Conversation naturelle** -- Claude repond de maniere concise en francais parle, sans markdown ni formatage visuel
