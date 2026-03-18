@@ -5,7 +5,7 @@ Description: Skill Alexa avec Claude API - Assistant vocal intelligent en franç
 Globals:
   Function:
     Timeout: 10
-    Runtime: nodejs20.x
+    Runtime: nodejs22.x
     MemorySize: 256
 
 Parameters:
