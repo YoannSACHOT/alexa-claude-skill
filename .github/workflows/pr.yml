@@ -1,0 +1,40 @@
+name: PR checks
+
+# Contrôle de chaque PR vers main, SANS déploiement (ops#2362).
+# Le déploiement AWS reste l'affaire exclusive de deploy.yml, sur push vers main.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installer les dépendances
+        working-directory: lambda
+        run: npm ci
+
+      - name: Charger le handler
+        working-directory: lambda
+        run: node -e "import('./index.js').then(m => { if (typeof m.handler !== 'function') { console.error('handler absent'); process.exit(1) } })"
+
+      - name: Audit des dépendances de production
+        working-directory: lambda
+        run: npm audit --omit=dev --audit-level=high
+
+      - uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: sam build
+        run: sam build
